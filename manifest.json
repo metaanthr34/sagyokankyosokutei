@@ -1,0 +1,25 @@
+{
+  "name": "作業環境測定（1日法）学習用シミュレーター",
+  "short_name": "作環測定",
+  "description": "1日法による幾何平均・幾何標準偏差・第1/第2評価値の計算と管理区分判定。作業環境測定士・労働衛生コンサルタント学習用。",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0a0e1a",
+  "theme_color": "#00b4d8",
+  "lang": "ja",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="description" content="作業環境測定士登録講習・労働衛生コンサルタント学習向け。1日法による幾何平均・幾何標準偏差・第1/第2評価値の計算と管理区分判定を行う学習用シミュレーターです。">
+<meta property="og:title" content="作業環境測定（1日法）学習用シミュレーター">
+<meta property="og:description" content="1日法による幾何平均・幾何標準偏差・第1/第2評価値の計算と管理区分判定。作業環境測定士・労働衛生コンサルタント学習用。">
+<meta property="og:type" content="website">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#00b4d8">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="作環測定">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>作業環境測定（1日法）学習用シミュレーター</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&family=Oswald:wght@300;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0e1a;--surface:#111827;--surface2:#1a2235;--border:#1e3a5f;
+  --accent:#00b4d8;--accent2:#0077b6;
+  --c1:#22c55e;--c2:#eab308;--c3:#ef4444;
+  --text:#e2e8f0;--dim:#94a3b8;--muted:#4a5568;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(0,180,216,0.03) 39px,rgba(0,180,216,0.03) 40px),repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(0,180,216,0.03) 39px,rgba(0,180,216,0.03) 40px);pointer-events:none;z-index:0;}
+.container{max-width:960px;margin:0 auto;padding:24px 16px;position:relative;z-index:1;}
+header{text-align:center;margin-bottom:28px;padding:28px 24px;background:linear-gradient(135deg,rgba(0,180,216,0.08),rgba(0,119,182,0.04));border:1px solid var(--border);border-radius:2px;position:relative;overflow:hidden;}
+header::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);}
+.header-label{font-family:'Oswald',sans-serif;font-weight:300;font-size:11px;letter-spacing:4px;color:var(--accent);text-transform:uppercase;margin-bottom:8px;}
+h1{font-family:'Oswald',sans-serif;font-size:clamp(18px,4vw,28px);font-weight:500;letter-spacing:2px;color:var(--text);margin-bottom:6px;}
+.subtitle{font-size:12px;color:var(--dim);letter-spacing:1px;}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:2px;padding:20px;margin-bottom:14px;position:relative;}
+.panel::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--accent2);border-radius:2px 0 0 2px;}
+.panel-title{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:3px;color:var(--accent);text-transform:uppercase;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.field{display:flex;flex-direction:column;gap:6px;}
+label{font-size:11px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;font-weight:500;}
+input[type=number]{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:14px;border-radius:2px;outline:none;transition:border-color .2s,box-shadow .2s;width:100%;}
+input[type=number]:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(0,180,216,0.12);}
+input::placeholder{color:var(--muted);}
+.section-label{font-size:11px;letter-spacing:2px;color:var(--c2);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.section-label::before{content:'';display:inline-block;width:6px;height:6px;background:var(--c2);border-radius:50%;}
+.data-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:7px;}
+.data-input-wrap{position:relative;}
+.data-input-wrap .idx{position:absolute;top:50%;left:9px;transform:translateY(-50%);font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;pointer-events:none;z-index:1;}
+.data-input-wrap input{padding-left:26px;}
+.b-toggle{display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:14px;user-select:none;}
+.tgl{width:38px;height:20px;background:var(--border);border-radius:10px;position:relative;transition:background .2s;flex-shrink:0;}
+.tgl::after{content:'';position:absolute;top:3px;left:3px;width:14px;height:14px;background:var(--dim);border-radius:50%;transition:transform .2s,background .2s;}
+.hcb{display:none;}
+.hcb:checked+.tgl{background:var(--accent2);}
+.hcb:checked+.tgl::after{transform:translateX(18px);background:var(--accent);}
+.tgl-label{font-size:11px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;}
+#bSection{display:none;}
+#bSection.visible{display:block;}
+.b-sec-label{font-size:11px;letter-spacing:2px;color:#a78bfa;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.b-sec-label::before{content:'';display:inline-block;width:6px;height:6px;background:#a78bfa;border-radius:50%;}
+.hint{font-size:11px;color:var(--muted);margin-top:7px;line-height:1.6;padding:7px 10px;background:rgba(0,180,216,0.04);border-left:2px solid var(--accent2);}
+.divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
+.btn{font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:2px;text-transform:uppercase;padding:11px 28px;border:none;cursor:pointer;border-radius:2px;transition:all .2s;}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 4px 20px rgba(0,180,216,0.3);}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 28px rgba(0,180,216,0.45);}
+.btn-secondary{background:transparent;color:var(--dim);border:1px solid var(--border);}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent);}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;}
+.error-msg{background:rgba(239,71,111,0.08);border:1px solid rgba(239,71,111,0.3);color:var(--c3);padding:10px 14px;border-radius:2px;font-size:12px;margin-top:10px;display:none;}
+.results-panel{display:none;animation:fadeIn .4s ease;}
+.results-panel.visible{display:block;}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.results-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:20px;}
+.metric-card{background:var(--surface2);border:1px solid var(--border);border-radius:2px;padding:14px;position:relative;overflow:hidden;}
+.metric-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);}
+.metric-label{font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:5px;}
+.metric-value{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:600;color:var(--accent);}
+.metric-unit{font-size:10px;color:var(--dim);margin-top:2px;}
+.eval-block{background:var(--surface2);border:1px solid var(--border);border-radius:2px;padding:14px;margin-bottom:10px;}
+.eval-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:6px;}
+.eval-label{font-size:12px;color:var(--dim);}
+.eval-value{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--text);}
+.eval-formula{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:6px;padding-top:6px;border-top:1px solid var(--border);line-height:2;}
+.cmp-tag{font-size:10px;letter-spacing:1px;padding:2px 7px;border-radius:2px;font-family:'JetBrains Mono',monospace;}
+.tag-ok{background:rgba(34,197,94,0.15);color:var(--c1);}
+.tag-warn{background:rgba(234,179,8,0.15);color:var(--c2);}
+.tag-ng{background:rgba(239,68,68,0.15);color:var(--c3);}
+.process-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:10px;}
+.process-table th{background:var(--bg);padding:7px 8px;text-align:right;color:var(--muted);font-weight:500;letter-spacing:1px;font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border);}
+.process-table th:first-child{text-align:center;}
+.process-table td{padding:6px 8px;text-align:right;border-bottom:1px solid rgba(30,58,95,0.4);font-family:'JetBrains Mono',monospace;color:var(--dim);font-size:11px;}
+.process-table td:first-child{text-align:center;color:var(--muted);font-size:10px;}
+.process-table tr:hover td{background:rgba(0,180,216,0.03);}
+.process-table .total-row td{color:var(--accent);border-top:1px solid var(--border);border-bottom:none;font-weight:600;}
+.footnote{font-size:10px;color:var(--muted);letter-spacing:.5px;line-height:1.8;margin-top:20px;padding:14px;border:1px solid var(--border);border-radius:2px;background:rgba(0,0,0,0.2);}
+.footnote strong{color:var(--dim);}
+
+/* 数直線 */
+.numline-wrap{margin:8px 0 16px;}
+.numline-title{font-size:10px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:8px;}
+.numline{position:relative;height:56px;margin:0 8px;}
+.nl-track{position:absolute;top:28px;left:0;right:0;height:3px;background:var(--border);border-radius:2px;}
+.nl-zone1{position:absolute;top:28px;left:0;height:3px;background:var(--c1);border-radius:2px 0 0 2px;}
+.nl-zone2{position:absolute;top:28px;height:3px;background:var(--c2);}
+.nl-zone3{position:absolute;top:28px;right:0;height:3px;background:var(--c3);border-radius:0 2px 2px 0;}
+.nl-tick{position:absolute;top:22px;width:1px;height:15px;background:var(--dim);}
+.nl-tick-label{position:absolute;top:40px;font-size:9px;color:var(--dim);font-family:'JetBrains Mono',monospace;transform:translateX(-50%);white-space:nowrap;}
+.nl-marker{position:absolute;top:18px;width:0;height:0;}
+.nl-marker::before{content:attr(data-label);position:absolute;bottom:22px;left:50%;transform:translateX(-50%);font-size:10px;font-family:'JetBrains Mono',monospace;white-space:nowrap;font-weight:600;}
+.nl-marker::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:10px;height:10px;border-radius:50%;}
+
+/* 3×3 マトリクス */
+.matrix-wrap{margin:16px 0;}
+.matrix-title{font-size:10px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:10px;}
+.matrix-container{display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap;}
+.matrix-table{border-collapse:collapse;flex-shrink:0;}
+.matrix-table th,.matrix-table td{width:80px;height:56px;text-align:center;vertical-align:middle;border:1px solid var(--border);font-size:11px;}
+.matrix-table th{background:var(--bg);color:var(--dim);font-weight:500;font-size:10px;letter-spacing:1px;height:32px;}
+.matrix-table .row-header{background:var(--bg);color:var(--dim);font-weight:500;font-size:10px;letter-spacing:1px;width:56px;}
+.mx-k1{background:rgba(34,197,94,0.12);color:var(--c1);font-family:'Oswald',sans-serif;font-size:18px;font-weight:500;}
+.mx-k2{background:rgba(234,179,8,0.12);color:var(--c2);font-family:'Oswald',sans-serif;font-size:18px;font-weight:500;}
+.mx-k3{background:rgba(239,68,68,0.12);color:var(--c3);font-family:'Oswald',sans-serif;font-size:18px;font-weight:500;}
+.mx-active{outline:3px solid var(--accent);outline-offset:-2px;position:relative;}
+.mx-active::after{content:'◀ NOW';position:absolute;right:-44px;top:50%;transform:translateY(-50%);font-size:9px;color:var(--accent);font-family:'JetBrains Mono',monospace;white-space:nowrap;}
+.matrix-legend{font-size:10px;color:var(--muted);line-height:1.8;padding:10px;background:var(--bg);border:1px solid var(--border);border-radius:2px;min-width:160px;flex:1;}
+.matrix-legend-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;}
+.ml-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+
+@media(max-width:600px){
+  .data-grid{grid-template-columns:repeat(3,1fr);}
+  .results-grid{grid-template-columns:repeat(2,1fr);}
+  .matrix-table th,.matrix-table td{width:60px;height:46px;font-size:10px;}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <div class="header-label">Industrial Hygiene · 1-Day Method</div>
+  <h1>作業環境測定（1日法）<br>学習用シミュレーター</h1>
+  <div class="subtitle" style="margin-top:12px;line-height:1.9;">
+    仮想データ等から幾何平均、幾何標準偏差、<br>
+    第1評価値、第2評価値を計算し、<br>
+    管理区分を示してくれる学習用シミュレーターです。
+  </div>
+</header>
+
+<div style="background:rgba(234,179,8,0.06);border:1px solid rgba(234,179,8,0.3);border-radius:2px;padding:14px 16px;margin-bottom:14px;border-left:3px solid #eab308;">
+  <div style="font-size:11px;letter-spacing:2px;color:#eab308;text-transform:uppercase;margin-bottom:8px;font-family:'Oswald',sans-serif;">⚠ ご利用にあたっての注意</div>
+  <ul style="font-size:12px;color:var(--dim);line-height:1.9;padding-left:1.2em;">
+    <li>本アプリは非公式の学習用ツールです。作業環境測定士の登録講習（での検算）、労働衛生コンサルタント・産業衛生専攻医での学習など、労働衛生・産業保健分野における作業環境測定の理解を深めることを目的として作成しています。</li>
+    <li>ダミーデータによるシミュレーションを主眼としており、現場での実用を想定したものではありません。そのため、実務や現場での判断には使用しないでください。</li>
+    <li>利用によって生じたトラブル、損害その他の不利益については、責任を負いかねますので、あらかじめご了承ください。</li>
+  </ul>
+</div>
+
+<div class="panel">
+  <div class="panel-title">基本設定</div>
+  <div style="max-width:260px;">
+    <div class="field">
+      <label>管理濃度 (mg/m³)</label>
+      <input type="number" id="kanriNodo" placeholder="例: 0.05" step="any" min="0">
+    </div>
+  </div>
+  <div class="hint" style="margin-top:10px;">⚠ 作業環境評価基準に定める管理濃度を入力してください。</div>
+</div>
+
+<div class="panel">
+  <div class="panel-title">測定データ入力</div>
+
+  <div class="measurement-section">
+    <div class="section-label">A測定（単位作業場所における平均的な状態を把握するための測定）</div>
+    <div class="data-grid" id="aDataGrid"></div>
+    <div class="hint" style="margin-top:8px;">未入力のセルは除外されます。最低2点以上（推奨：6〜10点）</div>
+  </div>
+
+  <hr class="divider">
+
+  <label class="b-toggle" for="useBMeasure">
+    <input type="checkbox" class="hcb" id="useBMeasure">
+    <span class="tgl"></span>
+    <span class="tgl-label">B測定データを使用する（最高濃度が予測される場所の測定）</span>
+  </label>
+
+  <div id="bSection">
+    <div class="b-sec-label">B測定データ（複数ある場合は最大値のみ評価）</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <div class="field" style="flex:1;min-width:120px;">
+        <label>B測定値 1</label>
+        <input type="number" id="b1" placeholder="mg/m³" step="any" min="0">
+      </div>
+      <div class="field" style="flex:1;min-width:120px;">
+        <label>B測定値 2（任意）</label>
+        <input type="number" id="b2" placeholder="mg/m³" step="any" min="0">
+      </div>
+      <div class="field" style="flex:1;min-width:120px;">
+        <label>B測定値 3（任意）</label>
+        <input type="number" id="b3" placeholder="mg/m³" step="any" min="0">
+      </div>
+    </div>
+    <div class="hint" style="margin-top:8px;">複数入力した場合、最大値のみで管理区分を判定します。</div>
+  </div>
+
+  <div class="error-msg" id="errorMsg"></div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="calculate()">▶ 管理区分を判定する</button>
+    <button class="btn btn-secondary" onclick="clearAll()">リセット</button>
+  </div>
+</div>
+
+<div class="panel results-panel" id="resultsPanel">
+  <div class="panel-title">計算結果</div>
+  <div class="results-grid" id="statsGrid"></div>
+  <hr class="divider">
+  <div style="margin-bottom:14px;">
+    <div style="font-size:11px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:8px;">A測定 計算プロセス</div>
+    <div style="overflow-x:auto;">
+      <table class="process-table" id="processTable"></table>
+    </div>
+  </div>
+  <hr class="divider">
+  <div id="evalSection"></div>
+  <!-- 数直線・マトリクス -->
+  <hr class="divider">
+  <div id="vizSection"></div>
+  <div class="footnote" id="footnote"></div>
+</div>
+
+</div>
+<script>
+
+const aGrid=document.getElementById('aDataGrid');
+for(let i=1;i<=10;i++){const w=document.createElement('div');w.className='data-input-wrap';w.innerHTML='<span class="idx">'+i+'</span><input type="number" id="a'+i+'" placeholder="---" step="any" min="0">';aGrid.appendChild(w);}
+document.getElementById('useBMeasure').addEventListener('change',function(){document.getElementById('bSection').classList.toggle('visible',this.checked);});
+
+function showError(m){const e=document.getElementById('errorMsg');e.textContent=m;e.style.display='block';}
+function hideError(){document.getElementById('errorMsg').style.display='none';}
+function clearAll(){
+  for(let i=1;i<=10;i++)document.getElementById('a'+i).value='';
+  ['b1','b2','b3','kanriNodo'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('useBMeasure').checked=false;
+  document.getElementById('bSection').classList.remove('visible');
+  document.getElementById('resultsPanel').classList.remove('visible');
+  
+  hideError();
+}
+
+/* 書式 */
+function sigN(v,n){
+  if(!isFinite(v))return String(v);
+  if(v===0)return'0';
+  const sign=v<0?'-':'';const av=Math.abs(v);
+  const exp=Math.floor(Math.log10(av));
+  let s=av.toPrecision(n);
+  if(s.toLowerCase().indexOf('e')!==-1)s=av.toFixed(Math.max(0,n-1-exp));
+  if(s.indexOf('.')!==-1){s=s.replace(/\.?0+$/,'');if(s==='')s='0';}
+  return sign+s;
+}
+function sig3(v){return sigN(v,3);}
+function p10(v){return isFinite(v)?sigN(v,10):String(v);}
+function p6(v){return isFinite(v)?sigN(v,6):String(v);}
+
+/* 判定 */
+function judgeA(EA1,EA2,EC){if(EA1<EC)return 1;if(EA2<=EC)return 2;return 3;}
+function judgeB(bv,EC){if(bv<EC)return 1;if(bv<=EC*1.5)return 2;return 3;}
+function judgeAB(a,b){if(a===1&&b===1)return 1;if(a===3||b===3)return 3;return 2;}
+
+/* 管理区分バナー */
+function kanriBanner(k,label,detail){
+  const col=['','#22c55e','#eab308','#ef4444'][k];
+  const bg=['','rgba(34,197,94,0.07)','rgba(234,179,8,0.07)','rgba(239,68,68,0.09)'][k];
+  const ttl=['','第1管理区分','第2管理区分','第3管理区分'][k];
+  const dsc=['',
+    '当該単位作業場所のほとんど（95％以上）の場所で気中有害物質の濃度が管理濃度を超えない状態であり、作業環境管理が適切であると判断される状態',
+    '当該単位作業場所の気中有害物質の濃度の平均が管理濃度を超えない状態であるが、第1管理区分に比べ、作業環境管理になお改善の余地があると判断される状態',
+    '当該単位作業場所の気中有害物質の濃度の平均が管理濃度を超える状態であり、作業環境管理が適切でないと判断される状態'
+  ][k];
+  let h='<div style="display:flex;align-items:center;gap:18px;padding:20px;border-radius:2px;border:2px solid '+col+';background:'+bg+';flex-wrap:wrap;">';
+  h+='<div style="font-family:Oswald,sans-serif;font-size:44px;font-weight:500;color:'+col+';line-height:1;min-width:56px;text-align:center;">第'+k+'管理区分</div>';
+  h+='<div style="flex:1;min-width:180px;">';
+  h+='<div style="font-family:Oswald,sans-serif;font-size:16px;letter-spacing:2px;color:'+col+';margin-bottom:6px;">'+ttl+(label?' '+label:'')+'</div>';
+  h+='<div style="font-size:13px;color:var(--dim);line-height:1.6;">'+dsc+'</div>';
+  if(detail)h+='<div style="margin-top:8px;font-size:11px;color:var(--muted);font-family:JetBrains Mono,monospace;line-height:1.8;">'+detail+'</div>';
+  h+='</div></div>';
+  return h;
+}
+
+/* プロセス表 */
+function renderProcessTable(aRaw,logVals,meanLog){
+  const ssLog=logVals.reduce(function(s,v){return s+(v-meanLog)*(v-meanLog);},0);
+  let tb='';
+  for(let i=0;i<aRaw.length;i++){
+    const lv=logVals[i],dev=lv-meanLog;
+    tb+='<tr><td>'+(i+1)+'</td><td>'+aRaw[i]+'</td><td>'+p10(lv)+'</td><td>'+(dev>=0?'+':'')+p10(dev)+'</td><td>'+p10(dev*dev)+'</td></tr>';
+  }
+  const sumL=logVals.reduce(function(a,b){return a+b;},0);
+  tb+='<tr class="total-row"><td>計/平均</td><td>—</td><td>'+p10(sumL)+' / <strong>'+p10(meanLog)+'</strong></td><td>—</td><td><strong>'+p10(ssLog)+'</strong></td></tr>';
+  document.getElementById('processTable').innerHTML=
+    '<thead><tr><th>No.</th><th>測定値 x</th><th>log x（10桁）</th><th>log x − log M</th><th>(log x − log M)²</th></tr></thead><tbody>'+tb+'</tbody>';
+}
+
+/* ── 数直線 ─────────────────────────────────────── */
+function renderNumberLine(EA1,EA2,EC,bMax,useB){
+  /* レイアウト設計
+     高さ配分（px相当、CSSはposition:absolute）:
+       0  〜 16px : ダイヤラベル上段（マーカー名 + 値）
+       16 〜 28px : ゾーンラベル I/II/III
+       28 〜 36px : ダイヤ本体（12px、中心=32px）
+       32px       : トラック中心線
+       36 〜 50px : 目盛りティック（上から32〜50px）
+       50 〜 68px : 目盛りラベル（値と名前）
+     コンテナ高さ: 80px
+  */
+
+  // スケール計算（A測定とB測定で共通スケールを使う）
+  const allPts=[EA1,EA2,EC,EC*1.5];
+  if(useB&&bMax>0) allPts.push(bMax);
+  const rawMax=Math.max.apply(null,allPts);
+  const margin=rawMax*0.15;
+  const vMin=0;
+  const vMax=rawMax+margin;
+  const span=vMax-vMin;
+  function pct(v){return Math.min(97,Math.max(3,(v-vMin)/span*100));}
+
+  const TRACK=32; // トラックのtop(px) — ダイヤ中心もここに合わせる
+  const DIA=12;   // ダイヤの一辺(px)
+  const DIA_HALF=DIA/2;
+
+  // ダイヤマーカー：トラック上に乗せ、ラベルを上に出す
+  // labelTop: ラベルの bottom をトラックより上に配置
+  function diamond(posPct, topLabel, valLabel){
+    // ダイヤ本体: top = TRACK - DIA_HALF (中心がトラック上)
+    const dTop = TRACK - DIA_HALF;
+    return '<div style="position:absolute;left:'+posPct+'%;top:0;bottom:0;transform:translateX(-50%);pointer-events:none;z-index:10;">'
+      // 上ラベル（マーカー名）
+      +'<div style="position:absolute;bottom:'+(80-dTop+4)+'px;left:50%;transform:translateX(-50%);z-index:11;'
+      +'font-size:9px;font-family:JetBrains Mono,monospace;color:var(--accent);white-space:nowrap;'
+      +'text-align:center;line-height:1.3;">'+topLabel+'</div>'
+      // ダイヤ本体
+      +'<div style="position:absolute;top:'+dTop+'px;left:50%;transform:translateX(-50%) rotate(45deg);z-index:10;'
+      +'width:'+DIA+'px;height:'+DIA+'px;background:var(--accent);"></div>'
+      // 下ラベル（値）
+      +'<div style="position:absolute;top:'+(TRACK+DIA_HALF+6)+'px;left:50%;transform:translateX(-50%);z-index:11;'
+      +'font-size:9px;font-family:JetBrains Mono,monospace;color:var(--accent);white-space:nowrap;'
+      +'text-align:center;line-height:1.3;">'+valLabel+'</div>'
+      +'</div>';
+  }
+
+  // 目盛りティック＋ラベル（ダイヤとは別レイヤー）
+  // ティックはトラック直下、ラベルはさらに下
+  function tick(posPct, name, val){
+    return '<div style="position:absolute;left:'+posPct+'%;top:0;bottom:0;transform:translateX(-50%);pointer-events:none;z-index:10;">'
+      // ティック線
+      +'<div style="position:absolute;top:'+(TRACK-2)+'px;left:50%;transform:translateX(-50%);'
+      +'width:1px;height:14px;background:var(--dim);"></div>'
+      // ラベル（目盛り名+値）
+      +'<div style="position:absolute;top:'+(TRACK+14)+'px;left:50%;transform:translateX(-50%);'
+      +'font-size:8.5px;font-family:JetBrains Mono,monospace;color:var(--dim);'
+      +'white-space:nowrap;text-align:center;line-height:1.4;">'+name+'<br>'+val+'</div>'
+      +'</div>';
+  }
+
+  // ゾーンラベル（ゾーン中央に配置、トラックより少し上）
+  function zoneLabel(leftPct, widthPct, text, col){
+    const midPct = leftPct + widthPct/2;
+    return '<div style="position:absolute;left:'+midPct+'%;top:'+(TRACK-20)+'px;transform:translateX(-50%);'
+      +'font-size:12px;font-weight:700;color:'+col+';font-family:Oswald,sans-serif;'
+      +'pointer-events:none;">'+text+'</div>';
+  }
+
+  /* ── A測定数直線 ─────────────────────────── */
+  const pEA2=pct(EA2), pEA1=pct(EA1), pEC=pct(EC);
+
+  let aLine='<div class="numline-wrap">';
+  aLine+='<div class="numline-title">A測定 管理濃度の位置（数直線）</div>';
+  aLine+='<div style="position:relative;height:80px;margin:0 12px 4px;">';
+  // トラック
+  aLine+='<div style="position:absolute;top:'+TRACK+'px;left:0;right:12px;height:4px;background:var(--border);border-radius:2px;z-index:0;"></div>';
+  // 矢印
+  aLine+='<div style="position:absolute;top:'+(TRACK-4)+'px;right:6px;width:0;height:0;border-top:6px solid transparent;border-bottom:6px solid transparent;border-left:10px solid var(--dim);"></div>';
+  // ゾーン色
+  aLine+='<div style="position:absolute;top:'+TRACK+'px;left:0;width:'+pEA2+'%;height:4px;background:#ef4444;z-index:1;"></div>';
+  aLine+='<div style="position:absolute;top:'+TRACK+'px;left:'+pEA2+'%;width:'+(pEA1-pEA2)+'%;height:4px;background:#eab308;z-index:1;"></div>';
+  aLine+='<div style="position:absolute;top:'+TRACK+'px;left:'+pEA1+'%;right:12px;height:4px;background:#22c55e;z-index:1;"></div>';
+  // ゾーンラベル（トラック上、ダイヤと干渉しない位置）
+  aLine+=zoneLabel(0, pEA2, 'III', '#ef4444');
+  if(pEA1-pEA2>6) aLine+=zoneLabel(pEA2, pEA1-pEA2, 'II', '#eab308');
+  aLine+=zoneLabel(pEA1, 97-pEA1, 'I', '#22c55e');
+  // 目盛り（EA₂, EA₁）
+  aLine+=tick(pEA2, 'E<sub>A2</sub>', sig3(EA2));
+  aLine+=tick(pEA1, 'E<sub>A1</sub>', sig3(EA1));
+  // ダイヤ（管理濃度 E）
+  aLine+=diamond(pEC, 'E', sig3(EC));
+  aLine+='</div>'; // inner
+  // 凡例
+  aLine+='<div style="display:flex;gap:12px;font-size:10px;color:var(--muted);flex-wrap:wrap;margin-top:2px;">';
+  aLine+='<span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;background:var(--accent);transform:rotate(45deg);display:inline-block;flex-shrink:0;"></span>E（管理濃度）</span>';
+  aLine+='<span style="display:flex;align-items:center;gap:4px;"><span style="width:16px;height:3px;background:#22c55e;display:inline-block;flex-shrink:0;"></span>I：EA₁&lt;E</span>';
+  aLine+='<span style="display:flex;align-items:center;gap:4px;"><span style="width:16px;height:3px;background:#eab308;display:inline-block;flex-shrink:0;"></span>II：EA₂≤E≤EA₁</span>';
+  aLine+='<span style="display:flex;align-items:center;gap:4px;"><span style="width:16px;height:3px;background:#ef4444;display:inline-block;flex-shrink:0;"></span>III：E&lt;EA₂</span>';
+  aLine+='</div>';
+  aLine+='</div>'; // numline-wrap
+
+  /* ── B測定数直線 ─────────────────────────── */
+  let bLine='';
+  if(useB&&bMax>0){
+    const pB=pct(bMax), pE_b=pct(EC), pE15_b=pct(EC*1.5);
+
+    bLine='<div class="numline-wrap" style="margin-top:16px;">';
+    bLine+='<div class="numline-title">B測定 B測定値の位置（数直線）</div>';
+    bLine+='<div style="position:relative;height:80px;margin:0 12px 4px;">';
+    bLine+='<div style="position:absolute;top:'+TRACK+'px;left:0;right:12px;height:4px;background:var(--border);border-radius:2px;z-index:0;"></div>';
+    bLine+='<div style="position:absolute;top:'+(TRACK-4)+'px;right:6px;width:0;height:0;border-top:6px solid transparent;border-bottom:6px solid transparent;border-left:10px solid var(--dim);"></div>';
+    // ゾーン色
+    bLine+='<div style="position:absolute;top:'+TRACK+'px;left:0;width:'+pE_b+'%;height:4px;background:#22c55e;z-index:1;"></div>';
+    bLine+='<div style="position:absolute;top:'+TRACK+'px;left:'+pE_b+'%;width:'+(pE15_b-pE_b)+'%;height:4px;background:#eab308;z-index:1;"></div>';
+    bLine+='<div style="position:absolute;top:'+TRACK+'px;left:'+pE15_b+'%;right:12px;height:4px;background:#ef4444;z-index:1;"></div>';
+    // ゾーンラベル
+    bLine+=zoneLabel(0, pE_b, 'I', '#22c55e');
+    if(pE15_b-pE_b>6) bLine+=zoneLabel(pE_b, pE15_b-pE_b, 'II', '#eab308');
+    bLine+=zoneLabel(pE15_b, 97-pE15_b, 'III', '#ef4444');
+    // 目盛り（E, 1.5E）
+    bLine+=tick(pE_b, 'E', sig3(EC));
+    bLine+=tick(pE15_b, '1.5E', sig3(EC*1.5));
+    // ダイヤ（CB）
+    bLine+=diamond(pB, 'C<sub>B</sub>', sig3(bMax));
+    bLine+='</div>'; // inner
+    bLine+='<div style="display:flex;gap:12px;font-size:10px;color:var(--muted);flex-wrap:wrap;margin-top:2px;">';
+    bLine+='<span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;background:var(--accent);transform:rotate(45deg);display:inline-block;flex-shrink:0;"></span>C<sub>B</sub>（B測定(最大値)）</span>';
+    bLine+='<span style="display:flex;align-items:center;gap:4px;"><span style="width:16px;height:3px;background:#22c55e;display:inline-block;flex-shrink:0;"></span>I：C<sub>B</sub>&lt;E</span>';
+    bLine+='<span style="display:flex;align-items:center;gap:4px;"><span style="width:16px;height:3px;background:#eab308;display:inline-block;flex-shrink:0;"></span>II：E≤C<sub>B</sub>≤1.5E</span>';
+    bLine+='<span style="display:flex;align-items:center;gap:4px;"><span style="width:16px;height:3px;background:#ef4444;display:inline-block;flex-shrink:0;"></span>III：1.5E&lt;C<sub>B</sub></span>';
+    bLine+='</div>';
+    bLine+='</div>'; // numline-wrap
+  }
+  return aLine+bLine;
+}
+
+function renderMatrix(kA,kB_used,kB){
+  const mx=[[0,0,0,0],[0,1,2,3],[0,2,2,3],[0,3,3,3]];
+  const kClass=['','mx-k1','mx-k2','mx-k3'];
+  const kLabel=['','第1','第2','第3'];
+
+  let h='<div class="matrix-wrap">';
+  h+='<div class="matrix-title">A+B 管理区分 総合判定マトリクス</div>';
+  if(!kB_used){
+    h+='<div style="font-size:12px;color:var(--muted);padding:8px 0;">（B測定なし：A測定のみで判定）</div>';
+    h+='</div>';return h;
+  }
+  h+='<div class="matrix-container"><div>';
+  h+='<table class="matrix-table">';
+  h+='<thead><tr>';
+  h+='<th class="row-header" style="background:transparent;border:none;"></th>';
+  h+='<th>B 第1<br><span style="font-size:9px;font-weight:400;color:var(--muted);">C<sub>B</sub>&lt;E</span></th>';
+  h+='<th>B 第2<br><span style="font-size:9px;font-weight:400;color:var(--muted);">E≤C<sub>B</sub>≤1.5E</span></th>';
+  h+='<th>B 第3<br><span style="font-size:9px;font-weight:400;color:var(--muted);">1.5E&lt;C<sub>B</sub></span></th>';
+  h+='</tr></thead><tbody>';
+  const aLabels=['','EA₁&lt;E','EA₂≤E≤EA₁','E&lt;EA₂'];
+  for(let a=1;a<=3;a++){
+    h+='<tr><td class="row-header">A 第'+a+'<br><span style="font-size:8px;font-weight:400;color:var(--muted);">'+aLabels[a]+'</span></td>';
+    for(let b=1;b<=3;b++){
+      const k=mx[a][b];
+      const isActive=(a===kA&&b===kB);
+      // アクティブセルは水色のアウトライン、余計な文字なし
+      const activeSt=isActive?' style="outline:2px solid var(--accent);outline-offset:-2px;"':'';
+      h+='<td class="'+kClass[k]+'"'+activeSt+'>'+kLabel[k]+'</td>';
+    }
+    h+='</tr>';
+  }
+  h+='</tbody></table></div>';
+  // 凡例
+  h+='<div class="matrix-legend">';
+  h+='<div style="font-size:10px;color:var(--dim);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase;">判定ルール</div>';
+  h+='<div class="matrix-legend-row"><span class="ml-dot" style="background:rgba(34,197,94,0.5);"></span>①AもBも第1 → 第1</div>';
+  h+='<div class="matrix-legend-row"><span class="ml-dot" style="background:rgba(239,68,68,0.5);"></span>②AかBが第3 → 第3</div>';
+  h+='<div class="matrix-legend-row"><span class="ml-dot" style="background:rgba(234,179,8,0.5);"></span>③それ以外　→ 第2</div>';
+  h+='<div style="margin-top:10px;padding:8px;background:rgba(0,180,216,0.06);border:1px solid var(--accent2);border-radius:2px;">';
+  h+='<div style="font-size:10px;color:var(--dim);margin-bottom:4px;">現在の判定</div>';
+  const fc=['','#22c55e','#eab308','#ef4444'];
+  h+='<div style="font-size:11px;color:var(--muted);">A測定：<strong style="color:'+fc[kA]+';">第'+kA+'管理区分</strong></div>';
+  h+='<div style="font-size:11px;color:var(--muted);">B測定：<strong style="color:'+fc[kB]+';">第'+kB+'管理区分</strong></div>';
+  h+='<div style="font-size:12px;color:var(--muted);margin-top:4px;">→ <strong style="color:'+fc[mx[kA][kB]]+';">第'+mx[kA][kB]+'管理区分</strong></div>';
+  h+='</div>';
+  h+='</div>';// legend
+  h+='</div></div>';return h;
+}
+
+/* ── メイン計算 ─────────────────────────────────── */
+function calculate(){
+  hideError();
+  const aRaw=[];
+  for(let i=1;i<=10;i++){const v=parseFloat(document.getElementById('a'+i).value);if(!isNaN(v)&&v>0)aRaw.push(v);}
+  if(aRaw.length<2){showError('A測定データは2点以上入力してください。');return;}
+  const EC=parseFloat(document.getElementById('kanriNodo').value);
+  if(isNaN(EC)||EC<=0){showError('管理濃度（正の数値）を入力してください。');return;}
+  const n=aRaw.length;
+
+  /* log計算 */
+  const logVals=aRaw.map(function(v){return Math.log10(v);});
+  const sumLog=logVals.reduce(function(a,b){return a+b;},0);
+  const meanLog=sumLog/n;
+  const M=Math.pow(10,meanLog);
+  const ssLog=logVals.reduce(function(s,v){return s+(v-meanLog)*(v-meanLog);},0);
+  const lsig1=Math.sqrt(ssLog/(n-1));
+  const sig1=Math.pow(10,lsig1);
+  const lsig1sq=lsig1*lsig1;
+  const usqrt=lsig1sq+0.084;
+  const lsig=Math.sqrt(usqrt);
+  const sig=Math.pow(10,lsig);
+  const lEA1=meanLog+1.645*lsig;
+  const EA1=Math.pow(10,lEA1);
+  const lsigsq=lsig*lsig;
+  const lEA2=meanLog+1.151*lsigsq;
+  const EA2=Math.pow(10,lEA2);
+
+  /* A判定 */
+  const kA=judgeA(EA1,EA2,EC);
+  let dA='';
+  if(kA===1)dA='EA₁ ('+sig3(EA1)+') &lt; 管理濃度 ('+sig3(EC)+') → 第1';
+  else if(kA===2)dA='管理濃度 ('+sig3(EC)+') ≤ EA₁ ('+sig3(EA1)+') かつ EA₂ ('+sig3(EA2)+') ≤ 管理濃度 ('+sig3(EC)+') → 第2';
+  else dA='管理濃度 ('+sig3(EC)+') &lt; EA₂ ('+sig3(EA2)+') → 第3';
+
+  /* B測定 */
+  const useB=document.getElementById('useBMeasure').checked;
+  let bMax=0,kB=0,dB='',kFinal=kA;
+  if(useB){
+    const bv1=parseFloat(document.getElementById('b1').value);
+    const bv2=parseFloat(document.getElementById('b2').value);
+    const bv3=parseFloat(document.getElementById('b3').value);
+    const bCands=[];
+    if(!isNaN(bv1)&&bv1>0)bCands.push(bv1);
+    if(!isNaN(bv2)&&bv2>0)bCands.push(bv2);
+    if(!isNaN(bv3)&&bv3>0)bCands.push(bv3);
+    if(bCands.length===0){showError('B測定値を1点以上入力してください。');return;}
+    bMax=Math.max.apply(null,bCands);
+    kB=judgeB(bMax,EC);
+    if(kB===1)dB='B(max) '+sig3(bMax)+' &lt; EC '+sig3(EC)+' → 第1';
+    else if(kB===2)dB='EC '+sig3(EC)+' ≤ B(max) '+sig3(bMax)+' ≤ EC×1.5 '+sig3(EC*1.5)+' → 第2';
+    else dB='B(max) '+sig3(bMax)+' &gt; EC×1.5 '+sig3(EC*1.5)+' → 第3';
+    kFinal=judgeAB(kA,kB);
+  }
+
+  renderProcessTable(aRaw,logVals,meanLog);
+
+  /* カード */
+  let cards='';
+  cards+='<div class="metric-card"><div class="metric-label">標本数 n</div><div class="metric-value">'+n+'</div><div class="metric-unit">点（A測定）</div></div>';
+  cards+='<div class="metric-card"><div class="metric-label">幾何平均 M</div><div class="metric-value">'+sig3(M)+'</div><div class="metric-unit">mg/m³ ／ log M = '+p6(meanLog)+'</div></div>';
+  cards+='<div class="metric-card"><div class="metric-label">幾何標準偏差 &#963;&#8321;（補正前）</div><div class="metric-value">'+sig3(sig1)+'</div><div class="metric-unit">log σ₁ = '+p6(lsig1)+'</div></div>';
+  cards+='<div class="metric-card"><div class="metric-label">幾何標準偏差 &#963;（補正後）</div><div class="metric-value">'+sig3(sig)+'</div><div class="metric-unit">log σ = '+p6(lsig)+'</div></div>';
+  cards+='<div class="metric-card"><div class="metric-label">第1評価値 EA₁</div><div class="metric-value" style="color:'+(EA1<EC?'var(--c1)':'var(--c3)')+';">'+sig3(EA1)+'</div><div class="metric-unit">mg/m³</div></div>';
+  cards+='<div class="metric-card"><div class="metric-label">第2評価値 EA₂</div><div class="metric-value" style="color:'+(EA2<=EC?'var(--c1)':'var(--c2)')+';">'+sig3(EA2)+'</div><div class="metric-unit">mg/m³</div></div>';
+  cards+='<div class="metric-card"><div class="metric-label">管理濃度 EC</div><div class="metric-value">'+sig3(EC)+'</div><div class="metric-unit">mg/m³</div></div>';
+  if(useB&&bMax>0){
+    cards+='<div class="metric-card"><div class="metric-label">B測定(最大値)</div><div class="metric-value" style="color:'+(['','var(--c1)','var(--c2)','var(--c3)'][kB])+';">'+sig3(bMax)+'</div><div class="metric-unit">mg/m³（EC×1.5 = '+sig3(EC*1.5)+'）</div></div>';
+  }
+  document.getElementById('statsGrid').innerHTML=cards;
+
+  /* 評価式展開 */
+  const c1=EA1<EC?'var(--c1)':'var(--c3)';
+  const c2=EA2<=EC?'var(--c1)':'var(--c2)';
+  const t1=EA1<EC?'<span class="cmp-tag tag-ok">EA₁ &lt; EC</span>':'<span class="cmp-tag tag-ng">EA₁ ≥ EC</span>';
+  const t2=EA2<=EC?'<span class="cmp-tag tag-ok">EA₂ ≤ EC</span>':'<span class="cmp-tag tag-warn">EA₂ &gt; EC</span>';
+  let ev='<div style="font-size:11px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:10px;">評価値の算出（常用対数 log₁₀・計算過程10桁）</div>';
+
+  ev+='<div class="eval-block">';
+  ev+='<div style="font-size:10px;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;">① 日内変動補正後の幾何標準偏差 σ</div>';
+  ev+='<div class="eval-formula">';
+  ev+='log σ₁ = √[ Σ(log xᵢ − log M)² ÷ (n−1) ] = √( '+p10(ssLog)+' ÷ '+(n-1)+' ) = √'+p10(ssLog/(n-1))+' = <strong style="color:var(--accent)">'+p10(lsig1)+'</strong>　（σ₁ = '+sig3(sig1)+'）<br>';
+  ev+='log σ　= √[ (log σ₁)² + 0.084 ] = √[ '+p10(lsig1sq)+' + 0.084 ] = √'+p10(usqrt)+' = <strong style="color:var(--accent)">'+p10(lsig)+'</strong>　（σ = <strong style="color:var(--accent)">'+sig3(sig)+'</strong>）';
+  ev+='</div></div>';
+
+  ev+='<div class="eval-block">';
+  ev+='<div style="font-size:10px;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;">② 第1評価値 EA₁</div>';
+  ev+='<div class="eval-row"><span class="eval-label">EA₁（有効数字3桁）</span><span class="eval-value" style="color:'+c1+';">'+sig3(EA1)+' mg/m³</span>'+t1+'</div>';
+  ev+='<div class="eval-formula">';
+  ev+='log EA₁ = log M + 1.645 × log σ = '+p10(meanLog)+' + 1.645 × '+p10(lsig)+' = '+p10(meanLog)+' + '+p10(1.645*lsig)+' = <strong style="color:var(--accent)">'+p10(lEA1)+'</strong><br>';
+  ev+='EA₁ = 10^'+p10(lEA1)+' = <strong style="color:var(--accent)">'+sig3(EA1)+' mg/m³</strong>';
+  ev+='</div></div>';
+
+  ev+='<div class="eval-block">';
+  ev+='<div style="font-size:10px;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;">③ 第2評価値 EA₂</div>';
+  ev+='<div class="eval-row"><span class="eval-label">EA₂（有効数字3桁）</span><span class="eval-value" style="color:'+c2+';">'+sig3(EA2)+' mg/m³</span>'+t2+'</div>';
+  ev+='<div class="eval-formula">';
+  ev+='log EA₂ = log M + 1.151 × (log σ)² = '+p10(meanLog)+' + 1.151 × '+p10(lsigsq)+' = '+p10(meanLog)+' + '+p10(1.151*lsigsq)+' = <strong style="color:var(--accent)">'+p10(lEA2)+'</strong><br>';
+  ev+='EA₂ = 10^'+p10(lEA2)+' = <strong style="color:var(--accent)">'+sig3(EA2)+' mg/m³</strong>';
+  ev+='</div></div>';
+
+  if(useB&&bMax>0){
+    const bc=['','var(--c1)','var(--c2)','var(--c3)'][kB];
+    const bt=['','<span class="cmp-tag tag-ok">第1</span>','<span class="cmp-tag tag-warn">第2</span>','<span class="cmp-tag tag-ng">第3</span>'][kB];
+    ev+='<div class="eval-block" style="border-color:#7c3aed;">';
+    ev+='<div style="font-size:10px;letter-spacing:2px;color:#a78bfa;text-transform:uppercase;margin-bottom:8px;">④ B測定 判定（最大値のみ評価）</div>';
+    ev+='<div class="eval-row"><span class="eval-label">B測定(最大値)</span><span class="eval-value" style="color:'+bc+';">'+sig3(bMax)+' mg/m³</span>'+bt+'</div>';
+    ev+='<div class="eval-formula">'+dB+'　（EC×1.5 = '+sig3(EC*1.5)+' mg/m³）</div>';
+    ev+='</div>';
+  }
+
+  ev+='<hr class="divider">';
+  ev+='<div style="font-size:11px;letter-spacing:2px;color:var(--dim);text-transform:uppercase;margin-bottom:14px;">管理区分 判定結果</div>';
+
+  if(useB&&bMax>0){
+    const aCol=['','#22c55e','#eab308','#ef4444'][kA];
+    const bCol=['','#22c55e','#eab308','#ef4444'][kB];
+    let sub='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">';
+    sub+='<div style="padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:2px;">';
+    sub+='<div style="font-size:10px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;">A測定 単独</div>';
+    sub+='<div style="font-family:Oswald,sans-serif;font-size:22px;color:'+aCol+';">第'+kA+'管理区分</div>';
+    sub+='<div style="font-size:10px;color:var(--muted);margin-top:4px;font-family:JetBrains Mono,monospace;">'+dA+'</div></div>';
+    sub+='<div style="padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:2px;">';
+    sub+='<div style="font-size:10px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;">B測定 単独</div>';
+    sub+='<div style="font-family:Oswald,sans-serif;font-size:22px;color:'+bCol+';">第'+kB+'管理区分</div>';
+    sub+='<div style="font-size:10px;color:var(--muted);margin-top:4px;font-family:JetBrains Mono,monospace;">'+dB+'</div></div>';
+    sub+='</div>';
+    ev+=sub+kanriBanner(kFinal,'（A+B総合）',judgeABDetail(kA,kB));
+  }else{
+    ev+=kanriBanner(kA,'（A測定）',dA);
+  }
+  document.getElementById('evalSection').innerHTML=ev;
+
+  /* 数直線 + マトリクス */
+  let viz=renderNumberLine(EA1,EA2,EC,bMax,useB&&bMax>0);
+  if(useB&&bMax>0){
+    viz+='<hr class="divider">'+renderMatrix(kA,true,kB);
+  }
+  document.getElementById('vizSection').innerHTML=viz;
+
+  /* 注釈 */
+  let fn='<strong>計算根拠（1日法・常用対数）</strong><br>';
+  fn+='• log σ₁ = √[Σ(log x − log M)² / (n−1)]　• log σ = √((log σ₁)² + 0.084)（0.084：日間変動）<br>';
+  fn+='• log EA₁ = log M + 1.645 × log σ　　• log EA₂ = log M + 1.151 × (log σ)²<br>';
+  fn+='• A判定：EA₁&lt;EC→第1 ／ EC≤EA₁かつEA₂≤EC→第2 ／ EC&lt;EA₂→第3<br>';
+  fn+='• B判定：B&lt;EC→第1 ／ EC≤B≤EC×1.5→第2 ／ B&gt;EC×1.5→第3（複数の場合は最大値のみ評価）<br>';
+  fn+='• A+B総合：①AもBも第1→第1 ②いずれかが第3→第3 ③それ以外→第2<br>';
+  fn+='• 計算過程10桁精度、最終結果有効数字3桁。本アプリは学習・演習用です。';
+  document.getElementById('footnote').innerHTML=fn;
+
+  document.getElementById('resultsPanel').classList.add('visible');
+  document.getElementById('resultsPanel').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function judgeABDetail(kA,kB){
+  const mx=[[0,0,0,0],[0,1,2,3],[0,2,2,3],[0,3,3,3]];
+  const kFinal=mx[kA][kB];
+  if(kA===1&&kB===1)return '①A・B 両方第1 → 第1管理区分';
+  if(kA===3||kB===3)return '②AかBが第3 → 第3管理区分';
+  return '③①②以外 → 第2管理区分';
+}
+
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('./sw.js')
+      .then(function(reg) { console.log('SW registered:', reg.scope); })
+      .catch(function(err) { console.log('SW error:', err); });
+  });
+}
+</script>
+</body>
+</html>
