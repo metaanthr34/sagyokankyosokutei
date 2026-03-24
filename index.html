@@ -80,7 +80,7 @@ input::placeholder{color:var(--muted);}
 .eval-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:6px;}
 .eval-label{font-size:12px;color:var(--dim);}
 .eval-value{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--text);}
-.eval-formula{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:6px;padding-top:6px;border-top:1px solid var(--border);line-height:2;}
+.eval-formula{font-size:12px;color:var(--muted);margin-top:6px;padding-top:8px;border-top:1px solid var(--border);line-height:1.8;overflow-x:auto;}
 .cmp-tag{font-size:10px;letter-spacing:1px;padding:2px 7px;border-radius:2px;font-family:'JetBrains Mono',monospace;}
 .tag-ok{background:rgba(34,197,94,0.15);color:var(--c1);}
 .tag-warn{background:rgba(234,179,8,0.15);color:var(--c2);}
@@ -92,7 +92,7 @@ input::placeholder{color:var(--muted);}
 .process-table td:first-child{text-align:center;color:var(--muted);font-size:10px;}
 .process-table tr:hover td{background:rgba(0,180,216,0.03);}
 .process-table .total-row td{color:var(--accent);border-top:1px solid var(--border);border-bottom:none;font-weight:600;}
-.footnote{font-size:10px;color:var(--muted);letter-spacing:.5px;line-height:1.8;margin-top:20px;padding:14px;border:1px solid var(--border);border-radius:2px;background:rgba(0,0,0,0.2);}
+.footnote{font-size:11px;color:var(--muted);letter-spacing:.3px;line-height:2.2;margin-top:20px;padding:14px;border:1px solid var(--border);border-radius:2px;background:rgba(0,0,0,0.2);}
 .footnote strong{color:var(--dim);}
 
 /* 数直線 */
@@ -132,6 +132,18 @@ input::placeholder{color:var(--muted);}
   .matrix-table th,.matrix-table td{width:60px;height:46px;font-size:10px;}
 }
 </style>
+<script>
+MathJax = {
+  tex: {
+    inlineMath: [['\\(','\\)']],
+    displayMath: [['\\[','\\]']],
+    tags: 'none'
+  },
+  options: { skipHtmlTags: ['script','noscript','style','textarea','pre'] },
+  startup: { typeset: false }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" id="MathJax-script" async></script>
 </head>
 <body>
 <div class="container">
@@ -566,25 +578,25 @@ function calculate(){
 
   ev+='<div class="eval-block">';
   ev+='<div style="font-size:10px;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;">① 日内変動補正後の幾何標準偏差 σ</div>';
-  ev+='<div class="eval-formula">';
-  ev+='log σ₁ = √[ Σ(log xᵢ − log M)² ÷ (n−1) ] = √( '+p10(ssLog)+' ÷ '+(n-1)+' ) = √'+p10(ssLog/(n-1))+' = <strong style="color:var(--accent)">'+p10(lsig1)+'</strong>　（σ₁ = '+sig3(sig1)+'）<br>';
-  ev+='log σ　= √[ (log σ₁)² + 0.084 ] = √[ '+p10(lsig1sq)+' + 0.084 ] = √'+p10(usqrt)+' = <strong style="color:var(--accent)">'+p10(lsig)+'</strong>　（σ = <strong style="color:var(--accent)">'+sig3(sig)+'</strong>）';
+  ev+='<div class="eval-formula" id="mjx-sigma">';
+  ev+='\\( \\log \\sigma_1 = \\sqrt{\\dfrac{\\sum(\\log x_i - \\log M)^2}{n-1}} = \\sqrt{\\dfrac{'+p10(ssLog)+'}{'+( n-1 )+'}} = \\sqrt{'+p10(ssLog/(n-1))+'} = \\) <strong style=\"color:var(--accent)\">\\('+p10(lsig1)+'\\)</strong>　\\((\\sigma_1 = '+sig3(sig1)+')\\)';
+  ev+='<br>\\( \\log \\sigma = \\sqrt{(\\log \\sigma_1)^2 + 0.084} = \\sqrt{'+p10(lsig1sq)+' + 0.084} = \\sqrt{'+p10(usqrt)+'} = \\) <strong style=\"color:var(--accent)\">\\('+p10(lsig)+'\\)</strong>　\\((\\sigma = '+sig3(sig)+')\\)';
   ev+='</div></div>';
 
   ev+='<div class="eval-block">';
   ev+='<div style="font-size:10px;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;">② 第1評価値 EA₁</div>';
   ev+='<div class="eval-row"><span class="eval-label">EA₁（有効数字3桁）</span><span class="eval-value" style="color:'+c1+';">'+sig3(EA1)+' mg/m³</span>'+t1+'</div>';
   ev+='<div class="eval-formula">';
-  ev+='log EA₁ = log M + 1.645 × log σ = '+p10(meanLog)+' + 1.645 × '+p10(lsig)+' = '+p10(meanLog)+' + '+p10(1.645*lsig)+' = <strong style="color:var(--accent)">'+p10(lEA1)+'</strong><br>';
-  ev+='EA₁ = 10^'+p10(lEA1)+' = <strong style="color:var(--accent)">'+sig3(EA1)+' mg/m³</strong>';
+  ev+='\\( \\log E_{A1} = \\log M + 1.645 \\times \\log \\sigma = '+p10(meanLog)+' + 1.645 \\times '+p10(lsig)+' = '+p10(meanLog)+' + '+p10(1.645*lsig)+' = \\) <strong style="color:var(--accent)">\\('+p10(lEA1)+'\\)</strong>';
+  ev+='<br>\\( E_{A1} = 10^{'+p10(lEA1)+'} = \\) <strong style="color:var(--accent)">'+sig3(EA1)+' mg/m³</strong>';
   ev+='</div></div>';
 
   ev+='<div class="eval-block">';
   ev+='<div style="font-size:10px;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;">③ 第2評価値 EA₂</div>';
   ev+='<div class="eval-row"><span class="eval-label">EA₂（有効数字3桁）</span><span class="eval-value" style="color:'+c2+';">'+sig3(EA2)+' mg/m³</span>'+t2+'</div>';
   ev+='<div class="eval-formula">';
-  ev+='log EA₂ = log M + 1.151 × (log σ)² = '+p10(meanLog)+' + 1.151 × '+p10(lsigsq)+' = '+p10(meanLog)+' + '+p10(1.151*lsigsq)+' = <strong style="color:var(--accent)">'+p10(lEA2)+'</strong><br>';
-  ev+='EA₂ = 10^'+p10(lEA2)+' = <strong style="color:var(--accent)">'+sig3(EA2)+' mg/m³</strong>';
+  ev+='\\( \\log E_{A2} = \\log M + 1.151 \\times (\\log \\sigma)^2 = '+p10(meanLog)+' + 1.151 \\times '+p10(lsigsq)+' = '+p10(meanLog)+' + '+p10(1.151*lsigsq)+' = \\) <strong style="color:var(--accent)">\\('+p10(lEA2)+'\\)</strong>';
+  ev+='<br>\\( E_{A2} = 10^{'+p10(lEA2)+'} = \\) <strong style="color:var(--accent)">'+sig3(EA2)+' mg/m³</strong>';
   ev+='</div></div>';
 
   if(useB&&bMax>0){
@@ -627,16 +639,27 @@ function calculate(){
   document.getElementById('vizSection').innerHTML=viz;
 
   /* 注釈 */
-  let fn='<strong>計算根拠（1日法・常用対数）</strong><br>';
-  fn+='• log σ₁ = √[Σ(log x − log M)² / (n−1)]　• log σ = √((log σ₁)² + 0.084)（0.084：日間変動）<br>';
-  fn+='• log EA₁ = log M + 1.645 × log σ　　• log EA₂ = log M + 1.151 × (log σ)²<br>';
-  fn+='• A判定：EA₁&lt;EC→第1 ／ EC≤EA₁かつEA₂≤EC→第2 ／ EC&lt;EA₂→第3<br>';
-  fn+='• B判定：B&lt;EC→第1 ／ EC≤B≤EC×1.5→第2 ／ B&gt;EC×1.5→第3（複数の場合は最大値のみ評価）<br>';
-  fn+='• A+B総合：①AもBも第1→第1 ②いずれかが第3→第3 ③それ以外→第2<br>';
-  fn+='• 計算過程10桁精度、最終結果有効数字3桁。本アプリは学習・演習用です。';
+  /* 注釈 */
+  let fn='';
+  fn+='<strong style="font-size:11px;letter-spacing:1px;">計算式</strong><br>';
+  fn+='\\( \\displaystyle \\log\\sigma_1 = \\sqrt{\\dfrac{\\sum(\\log x_i - \\log M)^2}{n-1}} \\)<br>';
+  fn+='\\( \\displaystyle \\log\\sigma = \\sqrt{(\\log\\sigma_1)^2 + 0.084} \\)&emsp;（0.084：日間変動）<br>';
+  fn+='\\( \\displaystyle \\log E_{A1} = \\log M + 1.645 \\times \\log\\sigma \\)<br>';
+  fn+='\\( \\displaystyle \\log E_{A2} = \\log M + 1.151 \\times (\\log\\sigma)^2 \\)<br>';
+  fn+='<br><strong style="font-size:11px;letter-spacing:1px;">判定基準</strong><br>';
+  fn+='A測定：\\( E_{A1} < E_C \\)→第1 ／ \\( E_C \\leq E_{A1} \\)かつ\\( E_{A2} \\leq E_C \\)→第2 ／ \\( E_C < E_{A2} \\)→第3<br>';
+  fn+='B測定：\\( C_B < E_C \\)→第1 ／ \\( E_C \\leq C_B \\leq 1.5E_C \\)→第2 ／ \\( C_B > 1.5E_C \\)→第3（複数の場合は最大値のみ評価）<br>';
+  fn+='A+B総合：①AもBも第1→第1管理区分&emsp;②いずれかが第3→第3管理区分&emsp;③それ以外→第2管理区分<br>';
+  fn+='<br>計算過程10桁精度、最終結果有効数字3桁。本アプリは非公式の学習用ツールです。';
   document.getElementById('footnote').innerHTML=fn;
-
+  if (window.MathJax && MathJax.typesetPromise) {
+    MathJax.typesetPromise([document.getElementById('footnote')]).catch(function(e){console.log(e);});
+  }
   document.getElementById('resultsPanel').classList.add('visible');
+  // MathJax再レンダリング
+  if (window.MathJax && MathJax.typesetPromise) {
+    MathJax.typesetPromise([document.getElementById('evalSection')]).catch(function(e){console.log(e);});
+  }
   document.getElementById('resultsPanel').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
